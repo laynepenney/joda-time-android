@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.12.2'
@@ -9,3 +9,8 @@ buildscript {
 
 apply plugin: 'android-reporting'
 
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
