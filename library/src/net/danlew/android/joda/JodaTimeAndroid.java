@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Provides a method to initialize the {@link ResourceZoneInfoProvider}
  * and register a {@link TimeZoneChangedReceiver} to receive
@@ -13,7 +15,7 @@ import android.content.IntentFilter;
 public final class JodaTimeAndroid {
 
     /** Whether the JodaTimeAndroid.init() method has been called. */
-    private static boolean sInitCalled = false;
+    private static final AtomicBoolean sInitCalled = new AtomicBoolean();
 
     private JodaTimeAndroid() {
         // no instances
@@ -25,19 +27,15 @@ public final class JodaTimeAndroid {
      * broadcasts. This method does nothing if previously called.
      */
     public static void init(Context context) {
-        if (sInitCalled) {
-            return;
+        if (sInitCalled.compareAndSet(false, true)) {
+            Context appContext = context.getApplicationContext();
+            ResourceZoneInfoProvider.init(appContext);
+            appContext.registerReceiver(new TimeZoneChangedReceiver(), new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED));
         }
-
-        sInitCalled = true;
-
-        Context appContext = context.getApplicationContext();
-        ResourceZoneInfoProvider.init(appContext);
-        appContext.registerReceiver(new TimeZoneChangedReceiver(), new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED));
     }
 
     /** Returns whether the init() method has been called. */
     protected static boolean hasInitBeenCalled() {
-        return sInitCalled;
+        return sInitCalled.get();
     }
 }
